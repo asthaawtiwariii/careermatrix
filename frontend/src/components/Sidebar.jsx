@@ -28,7 +28,8 @@ export default function Sidebar({
   isOpen, 
   onClose,
   selectedPathId,
-  onSelectPath
+  onSelectPath,
+  backendConnected
 }) {
   const navItems = [
     { step: 0, label: "Platform Overview", icon: <Compass size={18} />, badge: "Home" },
@@ -61,8 +62,9 @@ export default function Sidebar({
               <div className="sidebar-logo-title">
                 CareerMatrix <span>AI</span>
               </div>
-              <div className="sidebar-logo-sub">
-                Decision-Support SaaS
+              <div className="sidebar-logo-sub" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: backendConnected ? '#10b981' : '#f59e0b', display: 'inline-block' }} />
+                <span>{backendConnected ? "FastAPI Online" : "FastAPI Connecting..."}</span>
               </div>
             </div>
           </div>

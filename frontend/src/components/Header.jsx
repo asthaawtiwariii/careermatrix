@@ -17,7 +17,9 @@ export default function Header({
   isSampleLoaded, 
   onToggleSidebar, 
   onOpenLogin, 
-  user 
+  user,
+  backendConnected,
+  onCheckBackend
 }) {
   const getBreadcrumb = () => {
     switch (currentStep) {
@@ -67,6 +69,37 @@ export default function Header({
 
         {/* Right Side: Quick Actions & Login */}
         <div className="header-actions">
+          {/* Live Backend Connection Indicator */}
+          <div 
+            onClick={onCheckBackend}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+              padding: '0.3rem 0.65rem',
+              borderRadius: 'var(--radius-pill)',
+              fontSize: '0.75rem',
+              fontWeight: 600,
+              cursor: 'pointer',
+              background: backendConnected ? '#ecfdf5' : '#fffbeb',
+              color: backendConnected ? '#065f46' : '#92400e',
+              border: `1px solid ${backendConnected ? '#a7f3d0' : '#fde68a'}`,
+              transition: 'all 0.2s ease'
+            }}
+            title={backendConnected ? "FastAPI Backend is Connected (Click to re-ping)" : "Backend Offline / Retrying (Click to re-ping)"}
+          >
+            <span style={{
+              width: '7px',
+              height: '7px',
+              borderRadius: '50%',
+              backgroundColor: backendConnected ? '#10b981' : '#f59e0b',
+              boxShadow: backendConnected ? '0 0 6px #10b981' : 'none'
+            }} />
+            <span className="hide-mobile">
+              {backendConnected ? "Backend Online" : "Backend Offline"}
+            </span>
+          </div>
+
           <button
             type="button"
             className={`btn btn-sm ${isSampleLoaded ? 'btn-subtle' : 'btn-secondary'}`}

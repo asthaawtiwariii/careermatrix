@@ -49,46 +49,52 @@ CareerMatrix AI is an AI-powered student career decision-support system designed
 ## 📁 Repository Structure
 
 ```
-├── backend/
-│   ├── main.py                     # FastAPI app, routers, CORS & exception handling
-│   ├── database.py                 # SQLite database engine & session dependency
-│   ├── models.py                   # SQLAlchemy models (StudentProfile, CareerPath, Analysis, Roadmap)
-│   ├── schemas.py                  # Pydantic models for request & response validation
-│   ├── career_data.py              # Structured dataset for the 5 career pathways
-│   ├── test_backend.py             # Automated end-to-end API test suite
-│   ├── services/
-│   │   ├── ai_service.py           # AI abstraction layer with deterministic fallback
-│   │   ├── profile_service.py      # Profile synthesis & level classification
-│   │   ├── career_matching.py      # Deterministic alignment formula with interest weighting
-│   │   ├── skill_gap.py            # High/Med/Low gap prioritization and reasoning
-│   │   └── roadmap.py              # 30/60/90-day roadmap & Next Best Action generator
-│   ├── requirements.txt            # Python dependencies
-│   └── .env.example                # Sample environment configuration
-├── src/
-│   ├── components/
-│   │   ├── Header.jsx              # Navigation header with breadcrumbs and fast-pass demo
-│   │   ├── Footer.jsx              # Product principles & mandatory disclaimer
-│   │   ├── Sidebar.jsx             # Collapsible SaaS dashboard sidebar
-│   │   ├── WorkflowProgress.jsx    # Stepper workflow indicator
-│   │   └── PipelineBanner.jsx      # Visual 4-phase decision pipeline banner
-│   ├── pages/
-│   │   ├── LandingPage.jsx         # Hero section with 3 core feature cards
-│   │   ├── ProfilePage.jsx         # Multi-section student profile form
-│   │   ├── AnalysisPage.jsx        # AI profile analysis and alignment scanner
-│   │   ├── CareerMatrixPage.jsx    # 5 pathway comparison matrix with alignment rings
-│   │   ├── SkillGapPage.jsx        # Dual-track skill bars & prioritized gaps
-│   │   ├── RoadmapPage.jsx         # Connected 30/60/90-day interactive timeline
-│   │   └── LoginPage.jsx           # Student / Judge 1-click authentication
-│   ├── services/
-│   │   └── api.js                  # Frontend API client connecting to FastAPI
-│   ├── data/
-│   │   └── mockData.js             # Initial student baseline & fallback datasets
-│   ├── App.jsx                     # Root application coordinator
-│   ├── main.jsx                    # Application entrypoint
-│   └── index.css                   # Cohesive modern design tokens & stylesheet
-├── package.json
-├── index.html
-└── README.md
+CareerMatrix/
+├── .gitignore                      # Universal git ignore for frontend, backend, env & DBs
+├── README.md                       # Comprehensive documentation & setup guides
+│
+├── frontend/                       # React 19 + Vite Frontend
+│   ├── index.html                  # HTML entrypoint
+│   ├── package.json                # NPM packages & scripts
+│   ├── package-lock.json           # Locked dependency tree
+│   ├── vite.config.js              # Vite server & API proxy config
+│   ├── .oxlintrc.json              # Linter configuration
+│   ├── public/                     # Static assets & favicons
+│   │   ├── favicon.svg
+│   │   └── icons.svg
+│   └── src/
+│       ├── App.jsx                 # Main application coordinator
+│       ├── App.css                 # Layout styles
+│       ├── index.css               # Design tokens & modern stylesheet
+│       ├── main.jsx                # React root bootstrap
+│       ├── assets/                 # Component images & graphics
+│       ├── components/             # Reusable UI widgets
+│       │   ├── Header.jsx          # Top navigation with live backend indicator
+│       │   ├── Sidebar.jsx         # Collapsible navigation drawer
+│       │   ├── WorkflowProgress.jsx # Step indicator
+│       │   ├── PipelineBanner.jsx  # 4-stage pipeline banner
+│       │   └── Footer.jsx          # Footer & disclaimer
+│       ├── pages/                  # Workflow pages (Landing, Profile, Analysis, Matrix, SkillGap, Roadmap, Login)
+│       ├── services/
+│       │   └── api.js              # Full-stack API integration client
+│       └── data/
+│           └── mockData.js         # Student sample baselines & datasets
+│
+└── backend/                        # FastAPI + SQLite Backend
+    ├── main.py                     # FastAPI app, routers, CORS & error handling
+    ├── database.py                 # SQLite database engine & session dependency
+    ├── models.py                   # SQLAlchemy models
+    ├── schemas.py                  # Pydantic schemas for request & response validation
+    ├── career_data.py              # Structured dataset for 5 career pathways
+    ├── test_backend.py             # Automated end-to-end API test suite
+    ├── requirements.txt            # Python dependencies
+    ├── .env.example                # Sample environment configuration
+    └── services/
+        ├── ai_service.py           # AI abstraction layer with deterministic fallback
+        ├── profile_service.py      # Profile synthesis & level classification
+        ├── career_matching.py      # Deterministic alignment formula with interest weighting
+        ├── skill_gap.py            # High/Med/Low gap prioritization and reasoning
+        └── roadmap.py              # 30/60/90-day roadmap & Next Best Action generator
 ```
 
 ---
@@ -123,7 +129,10 @@ python -m uvicorn main:app --reload --port 8000
 ### 3. Frontend Setup
 
 ```bash
-# In the project root directory
+# Navigate to frontend directory
+cd frontend
+
+# Install dependencies
 npm install
 
 # Start the Vite development server

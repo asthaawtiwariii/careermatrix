@@ -48,18 +48,25 @@ export default function App() {
     isLoggedIn: true
   });
 
-  // Check backend health on initial load
+  // Check backend health on initial load and periodically
   useEffect(() => {
+    let isMounted = true;
     async function checkHealth() {
       const health = await checkBackendHealth();
-      if (health && health.status === "ok") {
-        setBackendConnected(true);
-        console.log("FastAPI backend connected:", health);
-      } else {
-        setBackendConnected(false);
+      if (isMounted) {
+        if (health && health.status === "ok") {
+          setBackendConnected(true);
+        } else {
+          setBackendConnected(false);
+        }
       }
     }
     checkHealth();
+    const interval = setInterval(checkHealth, 4000);
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
   }, []);
 
   // Stepper mapping:
@@ -239,6 +246,7 @@ export default function App() {
         onClose={() => setIsSidebarOpen(false)}
         selectedPathId={selectedCareerName.toLowerCase().replace(/[^a-z0-9]+/g, "-")}
         onSelectPath={(pathId) => handleSelectPath(pathId)}
+        backendConnected={backendConnected}
       />
 
       {/* Main Content Wrapper */}
@@ -252,6 +260,11 @@ export default function App() {
           onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
           onOpenLogin={() => setCurrentStep('login')}
           user={user}
+          backendConnected={backendConnected}
+          onCheckBackend={async () => {
+            const h = await checkBackendHealth();
+            setBackendConnected(!!(h && h.status === 'ok'));
+          }}
         />
 
         {/* Content Container */}

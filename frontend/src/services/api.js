@@ -3,17 +3,39 @@
  * Directly connects the frontend to the FastAPI endpoints at http://localhost:8000/api
  */
 
-const API_BASE_URL = "http://localhost:8000/api";
+// Candidates to try: relative /api (via Vite dev proxy) first, then direct local FastAPI URLs
+const URL_CANDIDATES = [
+  "/api",
+  "http://127.0.0.1:8000/api",
+  "http://localhost:8000/api"
+];
+
+let activeBaseUrl = "/api";
+
+export function getActiveApiUrl() {
+  return activeBaseUrl;
+}
 
 export async function checkBackendHealth() {
-  try {
-    const res = await fetch(`${API_BASE_URL}/health`, { method: "GET" });
-    if (!res.ok) throw new Error("Health check failed");
-    return await res.json();
-  } catch (err) {
-    console.warn("Backend healthcheck failed:", err.message);
-    return null;
+  for (const candidate of URL_CANDIDATES) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 2000);
+      const res = await fetch(`${candidate}/health`, { 
+        method: "GET",
+        signal: controller.signal 
+      });
+      clearTimeout(timeoutId);
+      if (res.ok) {
+        const data = await res.json();
+        activeBaseUrl = candidate;
+        return data;
+      }
+    } catch (err) {
+      // Continue to next candidate
+    }
   }
+  return null;
 }
 
 /**
@@ -45,7 +67,7 @@ export async function saveProfileToBackend(profile) {
       career_interests: profile.careerInterests || profile.career_interests || []
     };
 
-    const res = await fetch(`${API_BASE_URL}/profile`, {
+    const res = await fetch(`${activeBaseUrl}/profile`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
@@ -64,7 +86,7 @@ export async function saveProfileToBackend(profile) {
  */
 export async function getProfileFromBackend(studentId) {
   try {
-    const res = await fetch(`${API_BASE_URL}/profile/${studentId}`);
+    const res = await fetch(`${activeBaseUrl}/profile/${studentId}`);
     if (!res.ok) throw new Error(`HTTP error ${res.status}`);
     return await res.json();
   } catch (err) {
@@ -84,7 +106,7 @@ export async function getProfileFromBackend(studentId) {
  */
 export async function analyzeProfileOnBackend(studentId) {
   try {
-    const res = await fetch(`${API_BASE_URL}/analyze/${studentId}`, {
+    const res = await fetch(`${activeBaseUrl}/analyze/${studentId}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" }
     });
@@ -102,7 +124,7 @@ export async function analyzeProfileOnBackend(studentId) {
  */
 export async function compareCareersOnBackend(studentId) {
   try {
-    const res = await fetch(`${API_BASE_URL}/careers/compare/${studentId}`, {
+    const res = await fetch(`${activeBaseUrl}/careers/compare/${studentId}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" }
     });
@@ -120,7 +142,7 @@ export async function compareCareersOnBackend(studentId) {
  */
 export async function selectCareerOnBackend(studentId, careerName) {
   try {
-    const res = await fetch(`${API_BASE_URL}/careers/select`, {
+    const res = await fetch(`${activeBaseUrl}/careers/select`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ student_id: studentId, career_name: careerName })
@@ -139,7 +161,7 @@ export async function selectCareerOnBackend(studentId, careerName) {
  */
 export async function fetchSkillGapOnBackend(studentId, careerName) {
   try {
-    const res = await fetch(`${API_BASE_URL}/skill-gap`, {
+    const res = await fetch(`${activeBaseUrl}/skill-gap`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ student_id: studentId, career_name: careerName })
@@ -158,7 +180,7 @@ export async function fetchSkillGapOnBackend(studentId, careerName) {
  */
 export async function fetchRoadmapOnBackend(studentId, careerName) {
   try {
-    const res = await fetch(`${API_BASE_URL}/roadmap`, {
+    const res = await fetch(`${activeBaseUrl}/roadmap`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ student_id: studentId, career_name: careerName })
