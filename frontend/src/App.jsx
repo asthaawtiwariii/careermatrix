@@ -18,7 +18,7 @@ import {
 } from './services/api';
 
 export default function App() {
-  // Step 0: Landing, 1: Profile, 2: AI Analysis, 3: Career Matrix, 4: Skill Gap, 5: Roadmap
+  // Step 0: Overview/Landing, 1: Profile, 2: AI Analysis, 3: Career Paths, 4: Skill Gap, 5: Roadmap
   const [currentStep, setCurrentStep] = useState(0);
   const [maxUnlockedStep, setMaxUnlockedStep] = useState(1);
   const [profile, setProfile] = useState(initialStudentProfile);
@@ -169,7 +169,7 @@ export default function App() {
   };
 
   const handleReset = () => {
-    setCurrentStep(0);
+    setCurrentStep(1); // Go straight to profile entry for new assessment
     setProfile(initialStudentProfile);
     setAnalysisData(null);
     setCareerComparisons(null);
@@ -191,10 +191,6 @@ export default function App() {
         onReset={handleReset}
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
-        selectedPathId={selectedCareerName.toLowerCase().replace(/[^a-z0-9]+/g, "-")}
-        onSelectPath={(pathId) => handleSelectPath(pathId)}
-        backendConnected={backendConnected}
-        careerComparisons={careerComparisons}
       />
 
       {/* Main Content Area */}
@@ -209,10 +205,14 @@ export default function App() {
             const h = await checkBackendHealth();
             setBackendConnected(!!(h && h.status === 'ok'));
           }}
+          onNavigate={(step) => {
+            setCurrentStep(step);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
         />
 
         <main className="main-content">
-          {/* Workflow Progress Stepper */}
+          {/* Progress Stepper for Steps 1 - 5 */}
           {typeof currentStep === 'number' && currentStep > 0 && (
             <WorkflowProgress 
               currentStep={getStepperActiveStep()} 
@@ -221,24 +221,31 @@ export default function App() {
             />
           )}
 
-          {/* Loading Indicator Overlay */}
+          {/* Loading Indicator */}
           {isLoading && (
-            <div style={{ textAlign: 'center', padding: '2rem', background: 'rgba(255,255,255,0.85)', borderRadius: '12px', margin: '1rem 0' }}>
-              <div style={{ display: 'inline-block', width: '28px', height: '28px', border: '3px solid #e0e7ff', borderTopColor: '#4f46e5', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-              <p style={{ marginTop: '0.75rem', fontWeight: 600, color: 'var(--primary-indigo)' }}>
-                Generating your personalized Career Matrix with Gemini AI...
+            <div style={{ textAlign: 'center', padding: '2rem', background: 'var(--bg-surface)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-lg)', margin: '1rem 0' }}>
+              <div style={{ display: 'inline-block', width: '24px', height: '24px', border: '3px solid var(--primary-light)', borderTopColor: 'var(--primary)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+              <p style={{ marginTop: '0.75rem', fontWeight: 500, color: 'var(--primary)', fontSize: '0.875rem' }}>
+                Analyzing profile with Gemini AI...
               </p>
             </div>
           )}
 
-          {/* View 0: Landing Page */}
+          {/* View 0: Overview Dashboard */}
           {currentStep === 0 && (
             <LandingPage 
-              onStart={handleStart} 
+              profile={profile}
+              careerComparisons={careerComparisons}
+              onStart={handleStart}
+              onSelectPath={handleSelectPath}
+              onEditProfile={() => {
+                setCurrentStep(1);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
             />
           )}
 
-          {/* View 1: Student Profile Page (Step 1 of 4) */}
+          {/* View 1: Student Profile Page */}
           {currentStep === 1 && (
             <ProfilePage 
               profile={profile}
@@ -247,7 +254,7 @@ export default function App() {
             />
           )}
 
-          {/* View 2: AI Profile Analysis (Step 2 of 4) */}
+          {/* View 2: AI Profile Analysis */}
           {currentStep === 2 && (
             <AnalysisPage 
               profile={profile}
@@ -256,19 +263,15 @@ export default function App() {
             />
           )}
 
-          {/* View 3: Career Matrix (Step 3 of 4) */}
+          {/* View 3: Career Paths */}
           {currentStep === 3 && (
             <CareerMatrixPage 
               careerComparisons={careerComparisons}
               onSelectPath={handleSelectPath}
-              onStageNavigate={(step) => {
-                setCurrentStep(step);
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
             />
           )}
 
-          {/* View 4: Selected Career & Skill Gap (Step 4 of 4 - A) */}
+          {/* View 4: Skill Gaps */}
           {currentStep === 4 && (
             <SkillGapPage 
               selectedCareerName={selectedCareerName}
@@ -276,14 +279,10 @@ export default function App() {
               onSelectCareerName={(cName) => handleSelectPath(cName)}
               onGenerateRoadmap={handleGenerateRoadmap}
               onBackToMatrix={() => setCurrentStep(3)}
-              onStageNavigate={(step) => {
-                setCurrentStep(step);
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
             />
           )}
 
-          {/* View 5: 30/60/90-Day Roadmap (Step 4 of 4 - B) */}
+          {/* View 5: 90-Day Roadmap */}
           {currentStep === 5 && (
             <RoadmapPage 
               selectedCareerName={selectedCareerName}
@@ -291,10 +290,6 @@ export default function App() {
               onBackToSkillGap={() => setCurrentStep(4)}
               onBackToMatrix={() => setCurrentStep(3)}
               onEditProfile={() => setCurrentStep(1)}
-              onStageNavigate={(step) => {
-                setCurrentStep(step);
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
             />
           )}
         </main>

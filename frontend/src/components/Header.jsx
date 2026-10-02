@@ -1,11 +1,5 @@
 import React from 'react';
-import { 
-  Compass, 
-  Menu, 
-  RefreshCw, 
-  ChevronRight,
-  Sparkles
-} from 'lucide-react';
+import { Menu, Plus, UserCircle, RefreshCw } from 'lucide-react';
 
 export default function Header({ 
   currentStep, 
@@ -13,98 +7,91 @@ export default function Header({
   onToggleSidebar, 
   user,
   backendConnected,
-  onCheckBackend
+  onCheckBackend,
+  onNavigate
 }) {
-  const getBreadcrumb = () => {
+  const getPageTitle = () => {
     switch (currentStep) {
-      case 0: return "Platform Overview";
-      case 1: return "Step 1: Student Profile";
-      case 2: return "Step 2: AI Profile Analysis";
-      case 3: return "Step 3: Career Matrix Comparison";
-      case 4: return "Step 4: Skill Gap Matrix";
-      case 5: return "Action Plan: 30/60/90-Day Roadmap";
+      case 0: return "Overview";
+      case 1: return "Profile";
+      case 2: return "AI Analysis";
+      case 3: return "Career Paths";
+      case 4: return "Skill Gaps";
+      case 5: return "Roadmap";
       default: return "Dashboard";
     }
   };
 
   return (
-    <header className="header-wrapper">
-      <div className="header-container">
-        {/* Left Side: Hamburger & Brand */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.875rem' }}>
-          <button
-            type="button"
-            className="sidebar-toggle-btn"
-            onClick={onToggleSidebar}
-            aria-label="Toggle Navigation Sidebar"
-            title="Toggle Sidebar Menu"
-          >
-            <Menu size={20} />
-          </button>
+    <header className="saas-header">
+      {/* Left: Mobile hamburger & Current page title */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+        <button
+          type="button"
+          className="btn btn-ghost btn-sm"
+          onClick={onToggleSidebar}
+          aria-label="Toggle navigation menu"
+          style={{ display: 'flex', padding: '0.35rem', color: 'var(--text-secondary)' }}
+        >
+          <Menu size={18} />
+        </button>
 
-          <div className="logo-brand" onClick={() => onReset(false)}>
-            <div className="logo-icon-box">
-              <Compass size={22} strokeWidth={2.4} />
-            </div>
-            <div>
-              <div className="logo-text-title">
-                CareerMatrix <span style={{ color: 'var(--primary-indigo)' }}>AI</span>
-                <span className="logo-badge">Decision Support</span>
-              </div>
-              <div className="header-breadcrumb">
-                <span>Decision Journey</span>
-                <ChevronRight size={12} />
-                <span style={{ color: 'var(--primary-indigo)', fontWeight: 600 }}>{getBreadcrumb()}</span>
-              </div>
-            </div>
-          </div>
+        <h1 className="header-title" style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+          {getPageTitle()}
+        </h1>
+      </div>
+
+      {/* Right: Actions */}
+      <div className="header-actions">
+        {/* Backend status dot */}
+        <div 
+          onClick={onCheckBackend}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.35rem',
+            padding: '0.25rem 0.6rem',
+            borderRadius: 'var(--radius-sm)',
+            fontSize: '0.75rem',
+            color: 'var(--text-muted)',
+            cursor: 'pointer'
+          }}
+          title={backendConnected ? "Backend Connected (FastAPI)" : "Backend Offline / Retrying"}
+        >
+          <span style={{
+            width: '6px',
+            height: '6px',
+            borderRadius: '50%',
+            backgroundColor: backendConnected ? '#10b981' : '#f59e0b'
+          }} />
+          <span style={{ display: 'inline' }}>
+            {backendConnected ? "Live" : "Connecting"}
+          </span>
         </div>
 
-        {/* Right Side: Status & Reset */}
-        <div className="header-actions">
-          {/* Live Backend Indicator */}
-          <div 
-            onClick={onCheckBackend}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.4rem',
-              padding: '0.35rem 0.75rem',
-              borderRadius: 'var(--radius-pill)',
-              fontSize: '0.75rem',
-              fontWeight: 600,
-              cursor: 'pointer',
-              background: backendConnected ? '#ecfdf5' : '#fffbeb',
-              color: backendConnected ? '#065f46' : '#92400e',
-              border: `1px solid ${backendConnected ? '#a7f3d0' : '#fde68a'}`,
-              transition: 'all 0.2s ease'
-            }}
-            title={backendConnected ? "FastAPI Backend is Connected (Click to re-ping)" : "Backend Offline / Retrying (Click to re-ping)"}
-          >
-            <span style={{
-              width: '7px',
-              height: '7px',
-              borderRadius: '50%',
-              backgroundColor: backendConnected ? '#10b981' : '#f59e0b',
-              boxShadow: backendConnected ? '0 0 6px #10b981' : 'none'
-            }} />
-            <span className="hide-mobile">
-              {backendConnected ? "FastAPI Connected" : "Backend Offline"}
-            </span>
-          </div>
+        {/* New Assessment */}
+        <button
+          type="button"
+          className="btn btn-secondary btn-sm"
+          onClick={onReset}
+          id="new-assessment-header-btn"
+          title="Start a fresh career assessment"
+        >
+          <Plus size={14} />
+          <span>New Assessment</span>
+        </button>
 
-          {currentStep !== 0 && (
-            <button
-              type="button"
-              className="btn btn-sm btn-secondary"
-              onClick={() => onReset(true)}
-              title="Start a new profile"
-            >
-              <RefreshCw size={14} />
-              <span>New Assessment</span>
-            </button>
-          )}
-        </div>
+        {/* Profile */}
+        <button
+          type="button"
+          className="btn btn-ghost btn-sm"
+          onClick={() => onNavigate && onNavigate(1)}
+          title="Go to Profile"
+          style={{ color: 'var(--text-primary)', fontWeight: 500 }}
+        >
+          <UserCircle size={16} />
+          <span>Profile</span>
+        </button>
       </div>
     </header>
   );

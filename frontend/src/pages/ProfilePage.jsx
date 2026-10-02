@@ -2,16 +2,14 @@ import React, { useState } from 'react';
 import { 
   GraduationCap, 
   Code2, 
-  Briefcase, 
   FolderGit2, 
   Heart, 
-  Sparkles, 
   Plus, 
   X, 
   ArrowRight,
-  CheckCircle2
+  Sparkles
 } from 'lucide-react';
-import { interestOptions, degreeOptions, yearOptions } from '../data/mockData';
+import { interestOptions, yearOptions } from '../data/mockData';
 
 export default function ProfilePage({ 
   profile, 
@@ -30,9 +28,7 @@ export default function ProfilePage({
   const careerInterests = profile?.careerInterests || [];
   const projects = profile?.projects || [];
   const education = profile?.education || { degree: '', branch: '', year: '3rd Year (Pre-Final)' };
-  const experience = profile?.experience || { role: '', organization: '', duration: '' };
 
-  // Handlers for adding items
   const addTag = (category, value, setter) => {
     if (!value.trim()) return;
     const trimmed = value.trim();
@@ -87,13 +83,6 @@ export default function ProfilePage({
     });
   };
 
-  const updateExperience = (field, val) => {
-    setProfile({
-      ...profile,
-      experience: { ...experience, [field]: val }
-    });
-  };
-
   const updateProject = (index, field, val) => {
     const updated = [...projects];
     updated[index] = { ...updated[index], [field]: val };
@@ -121,52 +110,50 @@ export default function ProfilePage({
   };
 
   return (
-    <div className="profile-page" style={{ maxWidth: '900px', margin: '0 auto' }}>
-      {/* Step Header */}
-      <div style={{ marginBottom: '1.5rem' }}>
-        <div className="badge badge-indigo" style={{ marginBottom: '0.4rem' }}>
-          Step 1 of 4 — Profile Entry
-        </div>
-        <h1 style={{ fontSize: '1.875rem' }}>Student Profile & Background</h1>
-        <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem' }}>
-          Enter your education, current technical skills, and career interests to generate your custom AI matrix.
+    <div className="profile-page">
+      {/* Header */}
+      <div className="page-header" style={{ marginBottom: '1.5rem' }}>
+        <h1 style={{ fontSize: '1.75rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.25rem' }}>
+          Profile & Skills
+        </h1>
+        <p style={{ color: 'var(--text-muted)', fontSize: '0.9375rem' }}>
+          Provide your academic background, technical skills, and career preferences for AI analysis.
         </p>
       </div>
 
       <form onSubmit={(e) => { e.preventDefault(); onAnalyze(); }}>
-        {/* 1. Education Section */}
+        {/* Education Section */}
         <div className="card" style={{ marginBottom: '1.5rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1.25rem', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '0.75rem' }}>
-            <GraduationCap size={20} color="var(--primary-indigo)" />
-            <h2 style={{ fontSize: '1.2rem' }}>1. Education Details</h2>
-          </div>
+          <h2 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '1rem' }}>
+            Education
+          </h2>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
-            <div className="form-group">
-              <label className="form-label">Degree Program</label>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <label className="form-label">Degree</label>
               <input
                 type="text"
                 className="form-input"
-                placeholder="e.g. B.Tech Computer Science / B.S. Data Science"
+                placeholder="e.g. B.Tech Computer Science"
                 value={education.degree}
                 onChange={(e) => updateEducation('degree', e.target.value)}
                 required
               />
             </div>
 
-            <div className="form-group">
-              <label className="form-label">Branch / Specialization (Optional)</label>
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <label className="form-label">Specialization (Optional)</label>
               <input
                 type="text"
                 className="form-input"
-                placeholder="e.g. Artificial Intelligence & Systems"
+                placeholder="e.g. Artificial Intelligence"
                 value={education.branch}
                 onChange={(e) => updateEducation('branch', e.target.value)}
               />
             </div>
 
-            <div className="form-group">
-              <label className="form-label">Current Academic Year</label>
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <label className="form-label">Academic Year</label>
               <select
                 className="form-select"
                 value={education.year}
@@ -180,32 +167,28 @@ export default function ProfilePage({
           </div>
         </div>
 
-        {/* 2. Skills Section */}
+        {/* Skills Section */}
         <div className="card" style={{ marginBottom: '1.5rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1.25rem', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '0.75rem' }}>
-            <Code2 size={20} color="var(--primary-indigo)" />
-            <h2 style={{ fontSize: '1.2rem' }}>2. Technical Competencies & Skills</h2>
-          </div>
+          <h2 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '1rem' }}>
+            Skills & Technologies
+          </h2>
 
           {/* Programming Languages */}
           <div className="form-group">
-            <label className="form-label">
-              <span>Programming Languages</span>
-              <span style={{ fontSize: '0.75rem', color: 'var(--text-light)' }}>Type language and press Enter</span>
-            </label>
-            <div className="tags-cloud" style={{ marginBottom: '0.6rem' }}>
+            <label className="form-label">Programming Languages</label>
+            <div className="tags-container" style={{ marginBottom: '0.5rem' }}>
               {programmingLanguages.map(lang => (
-                <span key={lang} className="tag-chip tag-chip-removable" onClick={() => removeTag('programmingLanguages', lang)}>
+                <span key={lang} className="tag-chip active" onClick={() => removeTag('programmingLanguages', lang)}>
                   {lang}
-                  <X size={13} />
+                  <X size={12} />
                 </span>
               ))}
             </div>
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <div style={{ display: 'flex', gap: '0.5rem', maxWidth: '400px' }}>
               <input
                 type="text"
                 className="form-input"
-                placeholder="Add language (e.g. Python, JavaScript, C++, Java)..."
+                placeholder="e.g. Python, JavaScript, C++"
                 value={newProgLang}
                 onChange={(e) => setNewProgLang(e.target.value)}
                 onKeyDown={(e) => {
@@ -220,30 +203,27 @@ export default function ProfilePage({
                 className="btn btn-secondary btn-sm"
                 onClick={() => addTag('programmingLanguages', newProgLang, setNewProgLang)}
               >
-                <Plus size={16} /> Add
+                Add
               </button>
             </div>
           </div>
 
           {/* Technical Skills */}
-          <div className="form-group" style={{ marginTop: '1.25rem' }}>
-            <label className="form-label">
-              <span>Technical Skills / Concepts</span>
-              <span style={{ fontSize: '0.75rem', color: 'var(--text-light)' }}>SQL, REST APIs, OOP, Data Structures, etc.</span>
-            </label>
-            <div className="tags-cloud" style={{ marginBottom: '0.6rem' }}>
+          <div className="form-group">
+            <label className="form-label">Technical Concepts & Frameworks</label>
+            <div className="tags-container" style={{ marginBottom: '0.5rem' }}>
               {technicalSkills.map(skill => (
-                <span key={skill} className="tag-chip tag-chip-removable" onClick={() => removeTag('technicalSkills', skill)}>
+                <span key={skill} className="tag-chip active" onClick={() => removeTag('technicalSkills', skill)}>
                   {skill}
-                  <X size={13} />
+                  <X size={12} />
                 </span>
               ))}
             </div>
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <div style={{ display: 'flex', gap: '0.5rem', maxWidth: '400px' }}>
               <input
                 type="text"
                 className="form-input"
-                placeholder="Add concept (e.g. SQL, REST APIs, PyTorch, React)..."
+                placeholder="e.g. React, SQL, REST APIs, PyTorch"
                 value={newTechSkill}
                 onChange={(e) => setNewTechSkill(e.target.value)}
                 onKeyDown={(e) => {
@@ -258,30 +238,27 @@ export default function ProfilePage({
                 className="btn btn-secondary btn-sm"
                 onClick={() => addTag('technicalSkills', newTechSkill, setNewTechSkill)}
               >
-                <Plus size={16} /> Add
+                Add
               </button>
             </div>
           </div>
 
-          {/* Tools & Technologies */}
-          <div className="form-group" style={{ marginTop: '1.25rem' }}>
-            <label className="form-label">
-              <span>Tools & Platforms</span>
-              <span style={{ fontSize: '0.75rem', color: 'var(--text-light)' }}>Git, Docker, VS Code, Postman, Linux, etc.</span>
-            </label>
-            <div className="tags-cloud" style={{ marginBottom: '0.6rem' }}>
+          {/* Tools */}
+          <div className="form-group" style={{ marginBottom: 0 }}>
+            <label className="form-label">Tools & Platforms</label>
+            <div className="tags-container" style={{ marginBottom: '0.5rem' }}>
               {tools.map(tool => (
-                <span key={tool} className="tag-chip tag-chip-removable" onClick={() => removeTag('tools', tool)}>
+                <span key={tool} className="tag-chip active" onClick={() => removeTag('tools', tool)}>
                   {tool}
-                  <X size={13} />
+                  <X size={12} />
                 </span>
               ))}
             </div>
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <div style={{ display: 'flex', gap: '0.5rem', maxWidth: '400px' }}>
               <input
                 type="text"
                 className="form-input"
-                placeholder="Add tool (e.g. Git, Docker, Postman, AWS)..."
+                placeholder="e.g. Git, Docker, Postman, AWS"
                 value={newTool}
                 onChange={(e) => setNewTool(e.target.value)}
                 onKeyDown={(e) => {
@@ -296,72 +273,72 @@ export default function ProfilePage({
                 className="btn btn-secondary btn-sm"
                 onClick={() => addTag('tools', newTool, setNewTool)}
               >
-                <Plus size={16} /> Add
+                Add
               </button>
             </div>
           </div>
         </div>
 
-        {/* 3. Projects Section */}
+        {/* Projects Section */}
         <div className="card" style={{ marginBottom: '1.5rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '0.75rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-              <FolderGit2 size={20} color="var(--primary-indigo)" />
-              <h2 style={{ fontSize: '1.2rem' }}>3. Academic & Personal Projects (Optional)</h2>
-            </div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+            <h2 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+              Projects (Optional)
+            </h2>
             <button 
               type="button" 
-              className="btn btn-secondary btn-sm"
+              className="btn btn-ghost btn-sm"
               onClick={addProject}
+              style={{ color: 'var(--primary)' }}
             >
               <Plus size={14} /> Add Project
             </button>
           </div>
 
           {projects.length === 0 ? (
-            <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', fontStyle: 'italic', marginBottom: '0.5rem' }}>
-              No projects added yet. Click "+ Add Project" if you have portfolio or coursework projects.
+            <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>
+              No projects added yet. Click "+ Add Project" to include personal or academic coursework.
             </p>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               {projects.map((proj, idx) => (
-                <div key={proj.id || idx} style={{ background: 'var(--bg-subtle)', padding: '1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-light)', position: 'relative' }}>
+                <div key={proj.id || idx} style={{ background: 'var(--bg-subtle)', padding: '0.875rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-default)', position: 'relative' }}>
                   <button
                     type="button"
                     onClick={() => removeProject(idx)}
-                    style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', color: 'var(--text-light)', cursor: 'pointer' }}
+                    style={{ position: 'absolute', top: '8px', right: '8px', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
                     title="Remove project"
                   >
-                    <X size={16} />
+                    <X size={14} />
                   </button>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem', marginBottom: '0.5rem' }}>
-                    <div className="form-group" style={{ margin: 0 }}>
-                      <label className="form-label" style={{ fontSize: '0.75rem' }}>Project Title</label>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                    <div>
+                      <label className="form-label" style={{ fontSize: '0.75rem' }}>Project Name</label>
                       <input
                         type="text"
                         className="form-input"
-                        placeholder="e.g. Student Portal"
+                        placeholder="e.g. Task Manager App"
                         value={proj.name}
                         onChange={(e) => updateProject(idx, 'name', e.target.value)}
                       />
                     </div>
-                    <div className="form-group" style={{ margin: 0 }}>
-                      <label className="form-label" style={{ fontSize: '0.75rem' }}>Technologies Used</label>
+                    <div>
+                      <label className="form-label" style={{ fontSize: '0.75rem' }}>Tech Stack</label>
                       <input
                         type="text"
                         className="form-input"
-                        placeholder="e.g. Python, SQLite, HTML"
+                        placeholder="e.g. React, Node.js, SQLite"
                         value={proj.technologies}
                         onChange={(e) => updateProject(idx, 'technologies', e.target.value)}
                       />
                     </div>
                   </div>
-                  <div className="form-group" style={{ margin: 0 }}>
-                    <label className="form-label" style={{ fontSize: '0.75rem' }}>Brief Description</label>
+                  <div>
+                    <label className="form-label" style={{ fontSize: '0.75rem' }}>Description</label>
                     <input
                       type="text"
                       className="form-input"
-                      placeholder="e.g. Built a student portal to share study guides and course notes."
+                      placeholder="Brief summary of features or architecture"
                       value={proj.description}
                       onChange={(e) => updateProject(idx, 'description', e.target.value)}
                     />
@@ -372,53 +349,44 @@ export default function ProfilePage({
           )}
         </div>
 
-        {/* 4. Interests Section */}
+        {/* Interests & Target Roles */}
         <div className="card" style={{ marginBottom: '2rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1.25rem', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '0.75rem' }}>
-            <Heart size={20} color="var(--primary-purple)" />
-            <h2 style={{ fontSize: '1.2rem' }}>4. Technical Interests & Target Pathways</h2>
-          </div>
+          <h2 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '1rem' }}>
+            Interests & Preferences
+          </h2>
 
           <div className="form-group">
-            <label className="form-label">
-              <span>Areas of Interest</span>
-              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Select topics you enjoy exploring</span>
-            </label>
-            <div className="tags-cloud">
+            <label className="form-label">Areas of Interest</label>
+            <div className="tags-container">
               {interestOptions.map(interest => {
                 const selected = interests.includes(interest);
                 return (
                   <button
                     key={interest}
                     type="button"
-                    className={`tag-chip ${selected ? 'selected' : ''}`}
+                    className={`tag-chip ${selected ? 'active' : ''}`}
                     onClick={() => toggleInterest(interest)}
                   >
                     {interest}
-                    {selected && <CheckCircle2 size={13} />}
                   </button>
                 );
               })}
             </div>
           </div>
 
-          <div className="form-group" style={{ marginTop: '1.25rem' }}>
-            <label className="form-label">
-              <span>Target Career Roles (Optional)</span>
-              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Roles you are curious about</span>
-            </label>
-            <div className="tags-cloud">
+          <div className="form-group" style={{ marginBottom: 0 }}>
+            <label className="form-label">Target Career Roles (Optional)</label>
+            <div className="tags-container">
               {careerOptions.map(career => {
                 const selected = careerInterests.includes(career);
                 return (
                   <button
                     key={career}
                     type="button"
-                    className={`tag-chip ${selected ? 'selected' : ''}`}
+                    className={`tag-chip ${selected ? 'active' : ''}`}
                     onClick={() => toggleCareerInterest(career)}
                   >
                     {career}
-                    {selected && <CheckCircle2 size={13} />}
                   </button>
                 );
               })}
@@ -427,16 +395,14 @@ export default function ProfilePage({
         </div>
 
         {/* Action Button */}
-        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
           <button 
             type="submit" 
             className="btn btn-primary btn-lg"
             id="analyze-profile-btn"
-            style={{ minWidth: '260px', padding: '0.85rem 2rem', fontSize: '1rem' }}
           >
-            <Sparkles size={18} />
             <span>Analyze My Profile</span>
-            <ArrowRight size={18} />
+            <ArrowRight size={16} />
           </button>
         </div>
       </form>
