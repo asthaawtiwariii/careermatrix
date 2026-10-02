@@ -14,7 +14,7 @@ import {
   GraduationCap
 } from 'lucide-react';
 
-export default function LandingPage({ onStart, onStartWithDemo }) {
+export default function LandingPage({ onStart }) {
   return (
     <div className="landing-page">
       {/* Hero Section */}
@@ -36,26 +36,17 @@ export default function LandingPage({ onStart, onStartWithDemo }) {
           CareerMatrix helps students compare realistic career pathways, understand skill gaps, and create an actionable learning roadmap.
         </p>
 
-        {/* CTA Buttons */}
+        {/* CTA Button */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap' }}>
           <button 
             type="button" 
             className="btn btn-primary btn-lg"
             onClick={onStart}
             id="start-matrix-btn"
+            style={{ padding: '0.9rem 2rem', fontSize: '1.05rem', boxShadow: '0 4px 14px rgba(79, 70, 229, 0.35)' }}
           >
             <span>Build My Career Matrix</span>
             <ArrowRight size={18} />
-          </button>
-
-          <button 
-            type="button" 
-            className="btn btn-secondary btn-lg"
-            onClick={onStartWithDemo}
-            title="Pre-populate with sample CS Undergrad data for fast hackathon demo"
-          >
-            <GraduationCap size={18} color="var(--primary-indigo)" />
-            <span>Explore Demo Profile</span>
           </button>
         </div>
 

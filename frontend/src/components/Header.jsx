@@ -3,9 +3,6 @@ import {
   Compass, 
   Menu, 
   RefreshCw, 
-  UserCheck, 
-  LogIn, 
-  User, 
   ChevronRight,
   Sparkles
 } from 'lucide-react';
@@ -13,10 +10,7 @@ import {
 export default function Header({ 
   currentStep, 
   onReset, 
-  onLoadSample, 
-  isSampleLoaded, 
   onToggleSidebar, 
-  onOpenLogin, 
   user,
   backendConnected,
   onCheckBackend
@@ -29,7 +23,6 @@ export default function Header({
       case 3: return "Step 3: Career Matrix Comparison";
       case 4: return "Step 4: Skill Gap Matrix";
       case 5: return "Action Plan: 30/60/90-Day Roadmap";
-      case 'login': return "Student Authentication";
       default: return "Dashboard";
     }
   };
@@ -56,10 +49,10 @@ export default function Header({
             <div>
               <div className="logo-text-title">
                 CareerMatrix <span style={{ color: 'var(--primary-indigo)' }}>AI</span>
-                <span className="logo-badge">SaaS MVP</span>
+                <span className="logo-badge">Decision Support</span>
               </div>
               <div className="header-breadcrumb">
-                <span>Dashboard</span>
+                <span>Decision Journey</span>
                 <ChevronRight size={12} />
                 <span style={{ color: 'var(--primary-indigo)', fontWeight: 600 }}>{getBreadcrumb()}</span>
               </div>
@@ -67,16 +60,16 @@ export default function Header({
           </div>
         </div>
 
-        {/* Right Side: Quick Actions & Login */}
+        {/* Right Side: Status & Reset */}
         <div className="header-actions">
-          {/* Live Backend Connection Indicator */}
+          {/* Live Backend Indicator */}
           <div 
             onClick={onCheckBackend}
             style={{
               display: 'inline-flex',
               alignItems: 'center',
               gap: '0.4rem',
-              padding: '0.3rem 0.65rem',
+              padding: '0.35rem 0.75rem',
               borderRadius: 'var(--radius-pill)',
               fontSize: '0.75rem',
               fontWeight: 600,
@@ -96,49 +89,19 @@ export default function Header({
               boxShadow: backendConnected ? '0 0 6px #10b981' : 'none'
             }} />
             <span className="hide-mobile">
-              {backendConnected ? "Backend Online" : "Backend Offline"}
+              {backendConnected ? "FastAPI Connected" : "Backend Offline"}
             </span>
           </div>
-
-          <button
-            type="button"
-            className={`btn btn-sm ${isSampleLoaded ? 'btn-subtle' : 'btn-secondary'}`}
-            onClick={onLoadSample}
-            title="Load sample CS student profile for instant evaluation"
-          >
-            <UserCheck size={16} />
-            <span className="hide-mobile">{isSampleLoaded ? 'Sample Active' : 'Load Demo Profile'}</span>
-          </button>
 
           {currentStep !== 0 && (
             <button
               type="button"
-              className="btn btn-sm btn-secondary hide-mobile"
+              className="btn btn-sm btn-secondary"
               onClick={() => onReset(true)}
-              title="Reset to beginning"
+              title="Start a new profile"
             >
               <RefreshCw size={14} />
-              <span>Reset</span>
-            </button>
-          )}
-
-          {user?.isLoggedIn ? (
-            <div 
-              className="user-status-pill"
-              onClick={onOpenLogin}
-              title="Signed in student"
-            >
-              <div className="user-status-avatar">{user.avatar || 'AC'}</div>
-              <span className="hide-mobile" style={{ fontSize: '0.8rem', fontWeight: 600 }}>{user.name}</span>
-            </div>
-          ) : (
-            <button
-              type="button"
-              className="btn btn-sm btn-primary"
-              onClick={onOpenLogin}
-            >
-              <LogIn size={15} />
-              <span>Sign In</span>
+              <span>New Assessment</span>
             </button>
           )}
         </div>

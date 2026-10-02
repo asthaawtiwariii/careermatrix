@@ -80,7 +80,9 @@ export default function AnalysisPage({ profile, analysisData, onViewMatrix }) {
             "{summaryText}"
           </p>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginTop: '0.5rem', fontSize: '0.825rem', color: 'var(--text-muted)' }}>
-            <span>Identified Strengths: Multi-language agility, structured problem solving, academic rigor.</span>
+            <span>
+              <strong>Key Strengths:</strong> {analysisData?.strengths?.length > 0 ? analysisData.strengths.join(" • ") : "Synthesized from your submitted skills and coursework."}
+            </span>
           </div>
         </div>
       </div>

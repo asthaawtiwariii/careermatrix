@@ -1,16 +1,20 @@
 /**
  * CareerMatrix AI - Backend API Integration Client
- * Directly connects the frontend to the FastAPI endpoints at http://localhost:8000/api
+ * Supports local development (http://localhost:8000) and production Render backend (VITE_API_URL).
  */
 
-// Candidates to try: relative /api (via Vite dev proxy) first, then direct local FastAPI URLs
-const URL_CANDIDATES = [
-  "/api",
-  "http://127.0.0.1:8000/api",
-  "http://localhost:8000/api"
-];
+// Determine base API URL: Check VITE_API_URL environment variable first, then fallback
+const envApiUrl = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace(/\/+$/, "") : "";
 
-let activeBaseUrl = "/api";
+const URL_CANDIDATES = envApiUrl 
+  ? [`${envApiUrl}/api`, envApiUrl] 
+  : [
+      "/api",
+      "http://127.0.0.1:8000/api",
+      "http://localhost:8000/api"
+    ];
+
+let activeBaseUrl = envApiUrl ? `${envApiUrl}/api` : "/api";
 
 export function getActiveApiUrl() {
   return activeBaseUrl;
@@ -20,7 +24,7 @@ export async function checkBackendHealth() {
   for (const candidate of URL_CANDIDATES) {
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 2000);
+      const timeoutId = setTimeout(() => controller.abort(), 3000);
       const res = await fetch(`${candidate}/health`, { 
         method: "GET",
         signal: controller.signal 
@@ -39,133 +43,71 @@ export async function checkBackendHealth() {
 }
 
 /**
- * POST /api/profile
- * Saves student profile and returns created student record with unique ID
+ * Format frontend profile object for the backend request
  */
-export async function saveProfileToBackend(profile) {
-  try {
-    const payload = {
-      degree: profile.education?.degree || "B.Tech Computer Science & Engineering",
-      branch: profile.education?.branch || "Computer Science & Engineering",
-      year: profile.education?.year || "3rd Year (Pre-Final)",
-      skills: {
-        programmingLanguages: profile.skills?.programmingLanguages || [],
-        technicalSkills: profile.skills?.technicalSkills || [],
-        tools: profile.skills?.tools || []
-      },
-      projects: (profile.projects || []).map(p => ({
-        name: p.name || "",
-        description: p.description || "",
-        technologies: p.technologies || ""
-      })),
-      experience: {
-        role: profile.experience?.role || "",
-        organization: profile.experience?.organization || "",
-        duration: profile.experience?.duration || ""
-      },
-      interests: profile.interests || [],
-      career_interests: profile.careerInterests || profile.career_interests || []
-    };
+export function formatProfilePayload(profile) {
+  return {
+    degree: profile.education?.degree || "Undergraduate",
+    branch: profile.education?.branch || "",
+    year: profile.education?.year || "Current Student",
+    skills: {
+      programmingLanguages: profile.skills?.programmingLanguages || [],
+      technicalSkills: profile.skills?.technicalSkills || [],
+      tools: profile.skills?.tools || []
+    },
+    projects: (profile.projects || []).map(p => ({
+      name: p.name || "",
+      description: p.description || "",
+      technologies: p.technologies || ""
+    })),
+    experience: {
+      role: profile.experience?.role || "",
+      organization: profile.experience?.organization || "",
+      duration: profile.experience?.duration || ""
+    },
+    interests: profile.interests || [],
+    career_interests: profile.careerInterests || profile.career_interests || []
+  };
+}
 
-    const res = await fetch(`${activeBaseUrl}/profile`, {
+/**
+ * POST /api/generate-matrix
+ * Sends the real user profile to FastAPI -> Gemini AI and returns the full Career Matrix
+ */
+export async function generateCareerMatrix(profile) {
+  try {
+    const payload = formatProfilePayload(profile);
+    const res = await fetch(`${activeBaseUrl}/generate-matrix`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
     });
 
-    if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+    if (!res.ok) throw new Error(`HTTP error ${res.status}: ${res.statusText}`);
     return await res.json();
   } catch (err) {
-    console.error("Error in saveProfileToBackend:", err);
-    throw err;
-  }
-}
-
-/**
- * GET /api/profile/{id}
- */
-export async function getProfileFromBackend(studentId) {
-  try {
-    const res = await fetch(`${activeBaseUrl}/profile/${studentId}`);
-    if (!res.ok) throw new Error(`HTTP error ${res.status}`);
-    return await res.json();
-  } catch (err) {
-    console.error("Error in getProfileFromBackend:", err);
-    throw err;
-  }
-}
-
-/**
- * POST /api/analyze/{student_id}
- * Analyzes the student's profile and returns:
- * - profile summary
- * - strengths
- * - interests
- * - current level
- * - 5 possible career paths
- */
-export async function analyzeProfileOnBackend(studentId) {
-  try {
-    const res = await fetch(`${activeBaseUrl}/analyze/${studentId}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" }
-    });
-    if (!res.ok) throw new Error(`HTTP error ${res.status}`);
-    return await res.json();
-  } catch (err) {
-    console.error("Error in analyzeProfileOnBackend:", err);
-    throw err;
-  }
-}
-
-/**
- * POST /api/careers/compare/{student_id}
- * Compares exactly 5 career paths with alignment scores, matching & missing skills, reasoning, effort level, and first action.
- */
-export async function compareCareersOnBackend(studentId) {
-  try {
-    const res = await fetch(`${activeBaseUrl}/careers/compare/${studentId}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" }
-    });
-    if (!res.ok) throw new Error(`HTTP error ${res.status}`);
-    return await res.json();
-  } catch (err) {
-    console.error("Error in compareCareersOnBackend:", err);
-    throw err;
-  }
-}
-
-/**
- * POST /api/careers/select
- * Selects a career pathway for student
- */
-export async function selectCareerOnBackend(studentId, careerName) {
-  try {
-    const res = await fetch(`${activeBaseUrl}/careers/select`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ student_id: studentId, career_name: careerName })
-    });
-    if (!res.ok) throw new Error(`HTTP error ${res.status}`);
-    return await res.json();
-  } catch (err) {
-    console.error("Error in selectCareerOnBackend:", err);
+    console.error("Error in generateCareerMatrix:", err);
     throw err;
   }
 }
 
 /**
  * POST /api/skill-gap
- * Returns visual skill comparison, priority levels (HIGH, MEDIUM, LOW), and reasons
+ * Evaluates skill gaps for the user's selected career
  */
-export async function fetchSkillGapOnBackend(studentId, careerName) {
+export async function fetchSkillGapOnBackend(profile, careerName) {
   try {
+    const payload = {
+      career_name: careerName,
+      profile: formatProfilePayload(profile)
+    };
+
     const res = await fetch(`${activeBaseUrl}/skill-gap`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ student_id: studentId, career_name: careerName })
+      body: JSON.stringify(payload)
     });
+
     if (!res.ok) throw new Error(`HTTP error ${res.status}`);
     return await res.json();
   } catch (err) {
@@ -176,15 +118,21 @@ export async function fetchSkillGapOnBackend(studentId, careerName) {
 
 /**
  * POST /api/roadmap
- * Returns personalized 30/60/90-day roadmap and Next Best Action
+ * Returns personalized 30/60/90-day roadmap for the user's selected career
  */
-export async function fetchRoadmapOnBackend(studentId, careerName) {
+export async function fetchRoadmapOnBackend(profile, careerName) {
   try {
+    const payload = {
+      career_name: careerName,
+      profile: formatProfilePayload(profile)
+    };
+
     const res = await fetch(`${activeBaseUrl}/roadmap`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ student_id: studentId, career_name: careerName })
+      body: JSON.stringify(payload)
     });
+
     if (!res.ok) throw new Error(`HTTP error ${res.status}`);
     return await res.json();
   } catch (err) {

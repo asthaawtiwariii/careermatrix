@@ -9,28 +9,22 @@ import AnalysisPage from './pages/AnalysisPage';
 import CareerMatrixPage from './pages/CareerMatrixPage';
 import SkillGapPage from './pages/SkillGapPage';
 import RoadmapPage from './pages/RoadmapPage';
-import LoginPage from './pages/LoginPage';
-import { initialStudentProfile, careerPathways } from './data/mockData';
+import { initialStudentProfile } from './data/mockData';
 import { 
   checkBackendHealth,
-  saveProfileToBackend, 
-  analyzeProfileOnBackend, 
-  compareCareersOnBackend, 
-  selectCareerOnBackend, 
-  fetchSkillGapOnBackend, 
-  fetchRoadmapOnBackend 
+  generateCareerMatrix,
+  fetchSkillGapOnBackend,
+  fetchRoadmapOnBackend
 } from './services/api';
 
 export default function App() {
-  // Step 0: Landing, 1: Profile, 2: AI Analysis, 3: Career Matrix, 4: Skill Gap, 5: Roadmap, 'login': Login View
+  // Step 0: Landing, 1: Profile, 2: AI Analysis, 3: Career Matrix, 4: Skill Gap, 5: Roadmap
   const [currentStep, setCurrentStep] = useState(0);
   const [maxUnlockedStep, setMaxUnlockedStep] = useState(1);
   const [profile, setProfile] = useState(initialStudentProfile);
-  const [isSampleLoaded, setIsSampleLoaded] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  // Backend Live State
-  const [studentId, setStudentId] = useState(1);
+  // Dynamic Session State
   const [selectedCareerName, setSelectedCareerName] = useState("Full Stack Developer");
   const [analysisData, setAnalysisData] = useState(null);
   const [careerComparisons, setCareerComparisons] = useState(null);
@@ -39,14 +33,13 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [backendConnected, setBackendConnected] = useState(false);
 
-  // Authenticated Student State
-  const [user, setUser] = useState({
-    name: 'Alex Chen',
-    email: 'alex.chen@university.edu',
-    degree: 'B.Tech CS & Engineering (3rd Year)',
-    avatar: 'AC',
-    isLoggedIn: true
-  });
+  // User details for active session
+  const user = {
+    name: 'Student User',
+    degree: profile?.education?.degree || 'Undergraduate Student',
+    year: profile?.education?.year || 'Active Profile',
+    avatar: 'SU'
+  };
 
   // Check backend health on initial load and periodically
   useEffect(() => {
@@ -54,24 +47,20 @@ export default function App() {
     async function checkHealth() {
       const health = await checkBackendHealth();
       if (isMounted) {
-        if (health && health.status === "ok") {
-          setBackendConnected(true);
-        } else {
-          setBackendConnected(false);
-        }
+        setBackendConnected(!!(health && health.status === "ok"));
       }
     }
     checkHealth();
-    const interval = setInterval(checkHealth, 4000);
+    const interval = setInterval(checkHealth, 5000);
     return () => {
       isMounted = false;
       clearInterval(interval);
     };
   }, []);
 
-  // Stepper mapping:
+  // Stepper mapping
   const getStepperActiveStep = () => {
-    if (currentStep === 0 || currentStep === 'login') return 0;
+    if (currentStep === 0) return 0;
     if (currentStep === 1) return 1;
     if (currentStep === 2) return 2;
     if (currentStep === 3) return 3;
@@ -81,9 +70,9 @@ export default function App() {
 
   const handleStepperJump = (stepperStep) => {
     if (stepperStep === 1) setCurrentStep(1);
-    else if (stepperStep === 2) setCurrentStep(2);
-    else if (stepperStep === 3) setCurrentStep(3);
-    else if (stepperStep === 4) setCurrentStep(4);
+    else if (stepperStep === 2 && maxUnlockedStep >= 2) setCurrentStep(2);
+    else if (stepperStep === 3 && maxUnlockedStep >= 3) setCurrentStep(3);
+    else if (stepperStep === 4 && maxUnlockedStep >= 4) setCurrentStep(4);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -93,34 +82,33 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleStartWithDemo = () => {
-    setProfile(initialStudentProfile);
-    setIsSampleLoaded(true);
-    setCurrentStep(1);
-    setMaxUnlockedStep(prev => Math.max(prev, 1));
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  // 1. Trigger API Analysis Workflow
+  // 1. Submit Real User Profile & Generate Career Matrix via Gemini API
   const handleAnalyzeProfile = async () => {
     setIsLoading(true);
     try {
-      // POST /api/profile
-      const savedProfile = await saveProfileToBackend(profile);
-      const activeId = savedProfile?.id || 1;
-      setStudentId(activeId);
+      const result = await generateCareerMatrix(profile);
+      
+      setAnalysisData({
+        profile_summary: result.profile_summary,
+        strengths: result.strengths,
+        current_level: result.current_level,
+        profile_strength_score: result.profile_strength_score
+      });
 
-      // POST /api/analyze/{student_id}
-      const analysis = await analyzeProfileOnBackend(activeId);
-      setAnalysisData(analysis);
+      if (result.careers && result.careers.length > 0) {
+        setCareerComparisons(result.careers);
+        setSelectedCareerName(result.careers[0].career_name);
+      }
 
-      // POST /api/careers/compare/{student_id}
-      const comparisonRes = await compareCareersOnBackend(activeId);
-      if (comparisonRes?.careers) {
-        setCareerComparisons(comparisonRes.careers);
+      if (result.skill_gap) {
+        setSkillGapData(result.skill_gap);
+      }
+
+      if (result.roadmap) {
+        setRoadmapData(result.roadmap);
       }
     } catch (err) {
-      console.warn("Backend API call failed, continuing with client state:", err);
+      console.warn("Backend API call warning:", err);
     } finally {
       setIsLoading(false);
       setCurrentStep(2);
@@ -129,27 +117,15 @@ export default function App() {
     }
   };
 
-  const handleViewMatrix = async () => {
-    // If career comparisons aren't loaded yet, try fetching from backend
-    if (!careerComparisons && studentId) {
-      try {
-        const comparisonRes = await compareCareersOnBackend(studentId);
-        if (comparisonRes?.careers) {
-          setCareerComparisons(comparisonRes.careers);
-        }
-      } catch (err) {
-        console.warn("Could not fetch comparisons:", err);
-      }
-    }
+  const handleViewMatrix = () => {
     setCurrentStep(3);
     setMaxUnlockedStep(prev => Math.max(prev, 3));
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // 2. Select Career & Fetch Skill Gap
+  // 2. Select Career & Fetch Dynamic Skill Gap
   const handleSelectPath = async (careerNameOrId) => {
     let careerName = careerNameOrId;
-    // Map id to title if an ID was passed
     if (careerNameOrId === "full-stack-developer") careerName = "Full Stack Developer";
     else if (careerNameOrId === "python-developer") careerName = "Python Developer";
     else if (careerNameOrId === "ai-ml-engineer") careerName = "AI/ML Engineer";
@@ -160,16 +136,12 @@ export default function App() {
     setIsLoading(true);
 
     try {
-      // POST /api/careers/select
-      await selectCareerOnBackend(studentId, careerName);
-
-      // POST /api/skill-gap
-      const gapRes = await fetchSkillGapOnBackend(studentId, careerName);
+      const gapRes = await fetchSkillGapOnBackend(profile, careerName);
       if (gapRes) {
         setSkillGapData(gapRes);
       }
     } catch (err) {
-      console.warn("Skill gap fetch failed, falling back to client defaults:", err);
+      console.warn("Skill gap fetch warning:", err);
     } finally {
       setIsLoading(false);
       setCurrentStep(4);
@@ -178,17 +150,16 @@ export default function App() {
     }
   };
 
-  // 3. Generate 30/60/90 Roadmap
+  // 3. Generate Dynamic 30/60/90 Roadmap
   const handleGenerateRoadmap = async () => {
     setIsLoading(true);
     try {
-      // POST /api/roadmap
-      const roadmapRes = await fetchRoadmapOnBackend(studentId, selectedCareerName);
+      const roadmapRes = await fetchRoadmapOnBackend(profile, selectedCareerName);
       if (roadmapRes) {
         setRoadmapData(roadmapRes);
       }
     } catch (err) {
-      console.warn("Roadmap fetch failed, using fallback template:", err);
+      console.warn("Roadmap fetch warning:", err);
     } finally {
       setIsLoading(false);
       setCurrentStep(5);
@@ -199,38 +170,17 @@ export default function App() {
 
   const handleReset = () => {
     setCurrentStep(0);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const handleLoadSample = () => {
     setProfile(initialStudentProfile);
-    setIsSampleLoaded(true);
-    if (currentStep === 0) {
-      setCurrentStep(1);
-      setMaxUnlockedStep(1);
-    }
-  };
-
-  const handleLoginSuccess = (userData) => {
-    setUser(userData);
-    setCurrentStep(1);
-    setMaxUnlockedStep(prev => Math.max(prev, 1));
+    setAnalysisData(null);
+    setCareerComparisons(null);
+    setSkillGapData(null);
+    setRoadmapData(null);
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const handleLogout = () => {
-    setUser({
-      name: 'Guest Student',
-      email: 'guest@careermatrix.ai',
-      degree: 'Undergraduate',
-      avatar: 'GS',
-      isLoggedIn: false
-    });
   };
 
   return (
     <div className="saas-layout">
-      {/* SaaS Dashboard Sidebar */}
+      {/* Sidebar Navigation */}
       <Sidebar 
         currentStep={currentStep}
         onNavigate={(step) => {
@@ -238,27 +188,21 @@ export default function App() {
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }}
         user={user}
-        onOpenLogin={() => setCurrentStep('login')}
-        onLogout={handleLogout}
-        onLoadSample={handleLoadSample}
-        onReset={() => handleReset(true)}
+        onReset={handleReset}
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
         selectedPathId={selectedCareerName.toLowerCase().replace(/[^a-z0-9]+/g, "-")}
         onSelectPath={(pathId) => handleSelectPath(pathId)}
         backendConnected={backendConnected}
+        careerComparisons={careerComparisons}
       />
 
-      {/* Main Content Wrapper */}
+      {/* Main Content Area */}
       <div className="saas-main-wrapper">
-        {/* Top Header */}
         <Header 
           currentStep={currentStep}
           onReset={handleReset}
-          onLoadSample={handleLoadSample}
-          isSampleLoaded={isSampleLoaded}
           onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
-          onOpenLogin={() => setCurrentStep('login')}
           user={user}
           backendConnected={backendConnected}
           onCheckBackend={async () => {
@@ -267,9 +211,8 @@ export default function App() {
           }}
         />
 
-        {/* Content Container */}
         <main className="main-content">
-          {/* Progress Stepper for steps 1-4 */}
+          {/* Workflow Progress Stepper */}
           {typeof currentStep === 'number' && currentStep > 0 && (
             <WorkflowProgress 
               currentStep={getStepperActiveStep()} 
@@ -278,19 +221,20 @@ export default function App() {
             />
           )}
 
-          {/* View: Login Page */}
-          {currentStep === 'login' && (
-            <LoginPage 
-              onLoginSuccess={handleLoginSuccess}
-              onBack={() => setCurrentStep(0)}
-            />
+          {/* Loading Indicator Overlay */}
+          {isLoading && (
+            <div style={{ textAlign: 'center', padding: '2rem', background: 'rgba(255,255,255,0.85)', borderRadius: '12px', margin: '1rem 0' }}>
+              <div style={{ display: 'inline-block', width: '28px', height: '28px', border: '3px solid #e0e7ff', borderTopColor: '#4f46e5', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+              <p style={{ marginTop: '0.75rem', fontWeight: 600, color: 'var(--primary-indigo)' }}>
+                Generating your personalized Career Matrix with Gemini AI...
+              </p>
+            </div>
           )}
 
           {/* View 0: Landing Page */}
           {currentStep === 0 && (
             <LandingPage 
               onStart={handleStart} 
-              onStartWithDemo={handleStartWithDemo} 
             />
           )}
 
@@ -300,7 +244,6 @@ export default function App() {
               profile={profile}
               setProfile={setProfile}
               onAnalyze={handleAnalyzeProfile}
-              onLoadSample={handleLoadSample}
             />
           )}
 
@@ -356,7 +299,6 @@ export default function App() {
           )}
         </main>
 
-        {/* Global Footer with Mandatory Disclaimers */}
         <Footer />
       </div>
     </div>

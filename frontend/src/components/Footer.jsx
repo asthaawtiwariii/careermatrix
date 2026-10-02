@@ -17,15 +17,15 @@ export default function Footer() {
         <div className="footer-disclaimer">
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', fontWeight: 600, color: 'var(--text-main)', marginBottom: '0.25rem' }}>
             <ShieldCheck size={15} color="var(--primary-indigo)" />
-            <span>Official Prototype Disclaimer</span>
+            <span>Official System Disclaimer</span>
           </div>
           <p>
-            CareerMatrix provides alignment indicators based on the information provided. It does not predict career outcomes or guarantee employment.
+            CareerMatrix provides alignment indicators based on verified student input and industry benchmarks. It does not predict career outcomes or guarantee employment.
           </p>
         </div>
 
         <div style={{ fontSize: '0.75rem', color: 'var(--text-light)', marginTop: '0.25rem' }}>
-          Designed for hackathon presentation • React + Modern CSS prototype • Zero backend required
+          CareerMatrix AI • Decision-Support System • Academic & Industry Alignment Framework
         </div>
       </div>
     </footer>

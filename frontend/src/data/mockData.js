@@ -1,37 +1,24 @@
-// Mock dataset for CareerMatrix AI decision-support platform
+// Profile schema and constants for CareerMatrix AI decision-support platform
 
 export const initialStudentProfile = {
   education: {
-    degree: "B.Tech Computer Science & Engineering",
-    branch: "Computer Science & Engineering",
+    degree: "",
+    branch: "",
     year: "3rd Year (Pre-Final)"
   },
   skills: {
-    programmingLanguages: ["Python", "JavaScript", "SQL", "C++"],
-    technicalSkills: ["Object-Oriented Programming", "REST APIs (Basics)", "Data Structures & Algorithms", "HTML5 / CSS3"],
-    tools: ["Git & GitHub", "VS Code", "MySQL", "Postman", "Linux Basics"]
+    programmingLanguages: [],
+    technicalSkills: [],
+    tools: []
   },
-  projects: [
-    {
-      id: "p1",
-      name: "Campus Resource & Room Booking Portal",
-      description: "A web platform enabling student societies to reserve lab venues, share lecture notes, and coordinate peer study sessions.",
-      technologies: "JavaScript, HTML5, CSS3, Python, SQLite"
-    },
-    {
-      id: "p2",
-      name: "Student Feedback Sentiment Classifier",
-      description: "A natural language processing utility analyzing end-of-semester course feedback comments to surface constructive suggestions.",
-      technologies: "Python, Pandas, Scikit-learn, NLTK"
-    }
-  ],
+  projects: [],
   experience: {
-    role: "Frontend Development Intern",
-    organization: "EduTech Innovation Studio",
-    duration: "3 Months (Part-time)"
+    role: "",
+    organization: "",
+    duration: ""
   },
-  interests: ["Web Development", "AI/ML", "Software Engineering", "Cloud"],
-  careerInterests: ["Full Stack Developer", "Python Developer", "AI/ML Engineer"]
+  interests: [],
+  careerInterests: []
 };
 
 export const careerPathways = [

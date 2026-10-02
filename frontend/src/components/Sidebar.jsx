@@ -6,14 +6,9 @@ import {
   Layers, 
   Target, 
   CalendarCheck, 
-  UserCheck, 
   RefreshCw, 
-  LogIn, 
-  LogOut, 
-  ChevronRight,
-  ShieldCheck,
   X,
-  User
+  UserCheck
 } from 'lucide-react';
 import { careerPathways } from '../data/mockData';
 
@@ -21,15 +16,13 @@ export default function Sidebar({
   currentStep, 
   onNavigate, 
   user, 
-  onOpenLogin, 
-  onLogout,
-  onLoadSample,
   onReset,
   isOpen, 
   onClose,
   selectedPathId,
   onSelectPath,
-  backendConnected
+  backendConnected,
+  careerComparisons
 }) {
   const navItems = [
     { step: 0, label: "Platform Overview", icon: <Compass size={18} />, badge: "Home" },
@@ -39,6 +32,19 @@ export default function Sidebar({
     { step: 4, label: "4. Skill Gap Matrix", icon: <Target size={18} />, badge: "Step 4" },
     { step: 5, label: "5. 30/60/90 Roadmap", icon: <CalendarCheck size={18} />, badge: "Action" },
   ];
+
+  // Use dynamically generated career paths if available, otherwise fallback to standard pathways
+  const pathwaysToDisplay = careerComparisons && careerComparisons.length > 0 
+    ? careerComparisons.map(c => ({
+        id: c.career_name.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+        title: c.career_name,
+        alignmentPercent: Math.round(c.alignment_score)
+      }))
+    : careerPathways.map(p => ({
+        id: p.id,
+        title: p.title,
+        alignmentPercent: p.alignmentPercent
+      }));
 
   return (
     <>
@@ -64,7 +70,7 @@ export default function Sidebar({
               </div>
               <div className="sidebar-logo-sub" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
                 <span style={{ width: 6, height: 6, borderRadius: '50%', background: backendConnected ? '#10b981' : '#f59e0b', display: 'inline-block' }} />
-                <span>{backendConnected ? "FastAPI Online" : "FastAPI Connecting..."}</span>
+                <span>{backendConnected ? "FastAPI Online" : "Connecting..."}</span>
               </div>
             </div>
           </div>
@@ -79,29 +85,19 @@ export default function Sidebar({
           </button>
         </div>
 
-        {/* Student Profile Card Widget */}
+        {/* User Status Card */}
         <div className="sidebar-student-card">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <div className="student-avatar">
-              {user?.avatar || 'AC'}
+              <GraduationCap size={16} />
             </div>
             <div style={{ overflow: 'hidden' }}>
               <div className="student-name">
-                {user?.name || 'Alex Chen'}
+                {user?.degree || 'Student Session'}
               </div>
-              <div className="student-dept">
-                {user?.degree || 'B.Tech CS (3rd Year)'}
+              <div className="student-dept" style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                {user?.year || 'Active Profile'}
               </div>
-            </div>
-          </div>
-
-          <div className="student-strength-row">
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)' }}>
-              <span>Profile Strength</span>
-              <span style={{ color: 'var(--primary-indigo)' }}>78%</span>
-            </div>
-            <div className="progress-bar-track" style={{ height: '6px', marginTop: '0.25rem' }}>
-              <div className="progress-bar-fill" style={{ width: '78%' }} />
             </div>
           </div>
         </div>
@@ -131,12 +127,12 @@ export default function Sidebar({
           })}
         </nav>
 
-        {/* Quick Role Switcher for Hackathon Judges */}
+        {/* Quick Role Switcher */}
         <div className="sidebar-section-title" style={{ marginTop: '1.25rem' }}>
-          Evaluate Career Roles
+          Compare Career Roles
         </div>
         <div className="sidebar-role-chips">
-          {careerPathways.map((p) => {
+          {pathwaysToDisplay.map((p) => {
             const isSelected = selectedPathId === p.id;
             return (
               <button
@@ -144,8 +140,7 @@ export default function Sidebar({
                 type="button"
                 className={`role-chip-btn ${isSelected ? 'selected' : ''}`}
                 onClick={() => {
-                  onSelectPath(p.id);
-                  onNavigate(4); // navigate to skill gap for this role
+                  onSelectPath(p.title);
                   onClose();
                 }}
               >
@@ -156,21 +151,11 @@ export default function Sidebar({
           })}
         </div>
 
-        {/* Demo Fast Actions */}
+        {/* Assessment Controls */}
         <div className="sidebar-section-title" style={{ marginTop: '1.25rem' }}>
-          Hackathon Demo Tools
+          Session Actions
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', padding: '0 0.5rem' }}>
-          <button
-            type="button"
-            className="btn btn-secondary btn-sm"
-            style={{ width: '100%', justifyContent: 'flex-start' }}
-            onClick={() => { onLoadSample(); onClose(); }}
-          >
-            <UserCheck size={14} color="var(--primary-indigo)" />
-            <span>Load Demo Student</span>
-          </button>
-
           <button
             type="button"
             className="btn btn-secondary btn-sm"
@@ -178,41 +163,16 @@ export default function Sidebar({
             onClick={() => { onReset(); onClose(); }}
           >
             <RefreshCw size={14} />
-            <span>Reset Evaluation</span>
+            <span>Start Fresh Assessment</span>
           </button>
         </div>
 
-        {/* Footer User Account Area */}
+        {/* Footer info */}
         <div className="sidebar-footer">
-          {user?.isLoggedIn ? (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', overflow: 'hidden' }}>
-                <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#10b981', flexShrink: 0 }} />
-                <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {user.email}
-                </span>
-              </div>
-              <button
-                type="button"
-                className="btn btn-subtle btn-sm"
-                style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}
-                onClick={onLogout}
-                title="Sign Out"
-              >
-                <LogOut size={13} />
-              </button>
-            </div>
-          ) : (
-            <button
-              type="button"
-              className="btn btn-primary btn-sm"
-              style={{ width: '100%' }}
-              onClick={() => { onOpenLogin(); onClose(); }}
-            >
-              <LogIn size={14} />
-              <span>Student / Demo Login</span>
-            </button>
-          )}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', width: '100%', fontSize: '0.75rem', color: 'var(--text-light)' }}>
+            <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#10b981', flexShrink: 0 }} />
+            <span>AI Decision Support Engine</span>
+          </div>
         </div>
       </aside>
     </>
